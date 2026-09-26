@@ -5,22 +5,24 @@ import {
   Search,
   Plus,
   ArrowUpRight,
-  ExternalLink,
-  TrendingUp,
   CheckCircle2,
   ShieldCheck,
   Lock,
   Activity,
   ChevronRight,
-  Globe,
-  Mail,
-  Phone,
-  MapPin,
   Database,
   Layers,
   Sparkles,
   Users,
-  MessageSquare
+  MessageSquare,
+  Key,
+  Copy,
+  Check,
+  Cpu,
+  Share2,
+  TrendingUp,
+  Zap,
+  Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -163,7 +165,6 @@ const INITIAL_TOOLS = [
   }
 ];
 
-// Curated active monthly sponsors to display in the side grid layouts
 const SPONSORS_LEFT = [
   {
     name: "Coda Avenue",
@@ -212,53 +213,70 @@ const SPONSORS_RIGHT = [
   }
 ];
 
-// Interactive updates feed showcasing real founder events
-const FEED_POSTS = [
-  {
-    id: 1,
-    author: "Ritesh",
-    handle: "ritesh_taprefer",
-    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=100&h=100&fit=crop&crop=face",
-    time: "2 hours ago",
-    content: "TapRefer reached $18K MMR today. The affiliate match pipeline has connected over 150 enterprise software platforms this month.",
-    metrics: { likes: 42, replies: 6 }
-  },
-  {
-    id: 2,
-    author: "Yasser El-Gazzar",
-    handle: "yasser_chatbase",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    time: "5 hours ago",
-    content: "Just updated Chatbase's training latency. Large business files now load in under 12 seconds, reducing onboarding drop-off to zero.",
-    metrics: { likes: 88, replies: 14 }
-  },
-  {
-    id: 3,
-    author: "Rory Flynn",
-    handle: "rory_pdfai",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    time: "1 day ago",
-    content: "Passed 240K verified monthly revenue. Simple OCR matching engine optimized to parse multi-page PDFs with zero CPU throttling.",
-    metrics: { likes: 112, replies: 19 }
-  }
-];
-
-const CATEGORIES = ["All Categories", "Artificial Intelligence", "Developer Tools", "Productivity", "Fintech", "Marketing"];
+const CATEGORIES = ["All Categories", "Artificial Intelligence", "Developer Tools", "Productivity", "Fintech", "Marketing", "Free Utilities"];
 
 export default function AiToolsDirectory() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
+  // Password Generator State (Programmatic Utility Hook)
+  const [passwordLength, setPasswordLength] = useState(16);
+  const [includeUppercase, setIncludeUppercase] = useState(true);
+  const [includeLowercase, setIncludeKeep] = useState(true);
+  const [includeNumbers, setIncludeNumbers] = useState(true);
+  const [includeSymbols, setIncludeSymbols] = useState(true);
+  const [generatedPassword, setGeneratedPassword] = useState("");
+  const [copied, setCopied] = useState(false);
+
   // Submit modal form state
   const [toolName, setToolName] = useState("");
   const [toolDomain, setToolDomain] = useState("");
-  const [toolRevenue, setToolRevenue] = useState("");
   const [toolCategory, setToolCategory] = useState("Artificial Intelligence");
+  const [toolRevenue, setToolRevenue] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
+
+  // Direct checkout link configuration (Capped Category slots to protect Stripe)
+  const STRIPE_SUBSCRIBE_LINK = "https://billing.barakahsoft.com/p/sub_149_mo"; // Place active monthly sponsorship
+  const STRIPE_DEPOSIT_LINK = "https://billing.barakahsoft.com/p/dep_199_wait"; // Non-refundable waitlist deposit to hold category
+
+  // Programmatic Password Generator Logic
+  const generateSecurePassword = () => {
+    let charset = "";
+    if (includeUppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (includeLowercase) charset += "abcdefghijklmnopqrstuvwxyz";
+    if (includeNumbers) charset += "0123456789";
+    if (includeSymbols) charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+
+    if (!charset) {
+      setGeneratedPassword("Please select at least one option");
+      return;
+    }
+
+    let password = "";
+    for (let i = 0; i < passwordLength; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    setGeneratedPassword(password);
+    setCopied(false);
+  };
+
+  const copyToClipboard = () => {
+    if (!generatedPassword || generatedPassword.startsWith("Please")) return;
+    navigator.clipboard.writeText(generatedPassword);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Generate an initial password on load
+  React.useEffect(() => {
+    generateSecurePassword();
+  }, [passwordLength, includeUppercase, includeLowercase, includeNumbers, includeSymbols]);
 
   // Filter and search logic
   const filteredTools = useMemo(() => {
+    if (selectedCategory === "Free Utilities") return []; // Render generator block separately
+
     return INITIAL_TOOLS.filter((tool) => {
       const matchesSearch =
         tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -287,19 +305,15 @@ export default function AiToolsDirectory() {
     if (!toolName || !toolDomain) return;
     setFormSubmitted(true);
     setTimeout(() => {
-      // Clean up state
-      setFormSubmitted(false);
-      setIsSubmitModalOpen(false);
-      setToolName("");
-      setToolDomain("");
-      setToolRevenue("");
-    }, 2000);
+      // Direct redirect to the actual Stripe Link to capture immediate, high-friction intent!
+      window.location.href = STRIPE_SUBSCRIBE_LINK;
+    }, 1500);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-500/10">
 
-      {/* Dynamic Header */}
+      {/* Glassmorphic Global Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200/60 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
@@ -313,9 +327,9 @@ export default function AiToolsDirectory() {
           </div>
 
           <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
-            <a href="#directory" className="transition-colors hover:text-indigo-600">All Tools</a>
-            <a href="#updates" className="transition-colors hover:text-indigo-600">Founder Feed</a>
-            <a href="#sponsor" className="transition-colors hover:text-indigo-600 font-semibold text-slate-900">Advertise</a>
+            <button onClick={() => setSelectedCategory("All Categories")} className="transition-colors hover:text-indigo-600">All Tools</button>
+            <button onClick={() => setSelectedCategory("Free Utilities")} className="transition-colors hover:text-indigo-600">Free Utilities</button>
+            <a href="#distribution" className="transition-colors hover:text-indigo-600 font-semibold text-slate-900">Distribution Channel</a>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -331,13 +345,13 @@ export default function AiToolsDirectory() {
         </div>
       </header>
 
-      {/* Main Content Hub */}
+      {/* Main Hub Container */}
       <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
 
-        {/* Authoritative Hero */}
+        {/* Hero Section */}
         <section className="text-center max-w-3xl mx-auto mb-16">
           <Badge className="mb-4 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200/50 py-1 px-3 text-xs font-semibold">
-            Verified Software Metrics
+            Verified Software Metrics & Distribution Hub
           </Badge>
           <h1 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 mb-4 leading-tight">
             The directory of verified AI tools & SaaS revenues
@@ -352,7 +366,7 @@ export default function AiToolsDirectory() {
               <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
               <Input
                 type="text"
-                placeholder="Search tools, founders, or keywords..."
+                placeholder="Search tools, categories, or domain metrics..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-slate-900 placeholder-slate-400 h-11 text-sm"
@@ -360,20 +374,23 @@ export default function AiToolsDirectory() {
             </div>
             <Button
               onClick={() => setIsSubmitModalOpen(true)}
-              className="bg-slate-900 text-white hover:bg-slate-800 h-11 px-6 rounded-xl font-medium text-sm whitespace-nowrap"
+              className="bg-indigo-600 text-white hover:bg-indigo-700 h-11 px-6 rounded-xl font-medium text-sm whitespace-nowrap"
             >
-              List My Startup
+              Submit Tool
             </Button>
           </div>
         </section>
 
-        {/* Dynamic Category Filtering Bar */}
+        {/* Category Navigation Bar */}
         <section className="mb-12 border-b border-slate-200 pb-6">
           <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             {CATEGORIES.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => {
+                  setSelectedCategory(category);
+                  setSearchQuery("");
+                }}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-150 border whitespace-nowrap ${
                   selectedCategory === category
                     ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
@@ -386,254 +403,391 @@ export default function AiToolsDirectory() {
           </div>
         </section>
 
-        {/* 3-Column Trust Layout Grid */}
-        <div id="directory" className="grid grid-cols-1 lg:grid-cols-[1fr_3.4fr_1fr] gap-6 items-start mb-20">
-
-          {/* Left Sponsored Slot Grid */}
-          <aside className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Featured Slots</span>
-              <span className="flex h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-            </div>
-
-            {SPONSORS_LEFT.map((sponsor) => (
-              <Card key={sponsor.name} className="p-4 bg-white border-slate-200 hover:border-indigo-500/40 transition-all shadow-sm group flex flex-col justify-between min-h-[140px]">
+        {/* Conditional Layout Rendering */}
+        {selectedCategory === "Free Utilities" ? (
+          /* HIGH-TRAFFIC PROGRAMMATIC UTILITY: SECURITY PASSWORD GENERATOR */
+          <section className="max-w-3xl mx-auto mb-20">
+            <Card className="bg-white border-slate-200 p-8 shadow-sm rounded-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <Key className="h-5 w-5" />
+                </div>
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold tracking-wider text-indigo-600 uppercase bg-indigo-50 px-1.5 py-0.5 rounded">
-                      {sponsor.tag}
-                    </span>
-                    <img
-                      src={`https://logo.clearbit.com/${sponsor.domain}`}
-                      alt={sponsor.name}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=40&h=40&fit=crop`;
-                      }}
-                      className="h-5 w-5 rounded-md object-contain border border-slate-100"
-                    />
+                  <h2 className="text-xl font-bold text-slate-900">Enterprise Password Generator</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">High-entropy deterministic passwords built entirely on-device.</p>
+                </div>
+              </div>
+
+              {/* Password Display Box */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between mb-6">
+                <span className="font-mono text-base font-bold text-slate-800 break-all select-all">
+                  {generatedPassword}
+                </span>
+                <Button
+                  onClick={copyToClipboard}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg h-9 px-3 gap-1.5 text-xs bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      <span className="text-emerald-600 font-bold">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Controls */}
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-700">
+                    <span>Password Length</span>
+                    <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{passwordLength} characters</span>
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                    {sponsor.name}
-                  </h3>
-                  <p className="text-[11px] text-slate-500 mt-1 leading-normal line-clamp-2">
-                    {sponsor.description}
-                  </p>
+                  <input
+                    type="range"
+                    min="8"
+                    max="64"
+                    value={passwordLength}
+                    onChange={(e) => setPasswordLength(parseInt(e.target.value))}
+                    className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg cursor-pointer"
+                  />
                 </div>
-                <div className="pt-2 border-t border-slate-100/60 mt-2 flex justify-end">
-                  <a
-                    href={sponsor.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] font-bold text-slate-600 flex items-center gap-1 hover:text-indigo-600 transition-colors"
+
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={includeUppercase}
+                      onChange={(e) => setIncludeUppercase(e.target.checked)}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                    />
+                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900">Uppercase Letters (A-Z)</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={includeLowercase}
+                      onChange={(e) => setIncludeKeep(e.target.checked)}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                    />
+                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900">Lowercase Letters (a-z)</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={includeNumbers}
+                      onChange={(e) => setIncludeNumbers(e.target.checked)}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                    />
+                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900">Numbers (0-9)</span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={includeSymbols}
+                      onChange={(e) => setIncludeSymbols(e.target.checked)}
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                    />
+                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900">Special Symbols (&@#$%)</span>
+                  </label>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex justify-end">
+                  <Button
+                    onClick={generateSecurePassword}
+                    className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 h-10 gap-1.5"
                   >
-                    <span>Visit site</span>
-                    <ArrowUpRight className="h-3 w-3" />
-                  </a>
+                    <Zap className="h-4 w-4" />
+                    <span>Regenerate Secure Password</span>
+                  </Button>
                 </div>
-              </Card>
-            ))}
-
-            <Button
-              onClick={() => setIsSubmitModalOpen(true)}
-              variant="outline"
-              className="w-full text-xs font-bold text-slate-500 border-dashed border-slate-300 py-6 hover:bg-slate-50 hover:text-indigo-600"
-            >
-              + Place Sponsored Ad
-            </Button>
-          </aside>
-
-          {/* Center Main Metric Leaderboard */}
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-indigo-600" />
-                  <span>AI & Software Metrics Board</span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Showing verified ARR and scaling multipliers.</p>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-medium">Auto-updated hourly</span>
-              </div>
-            </div>
+            </Card>
+          </section>
+        ) : (
+          /* MAIN DIRECTORY BOARD & LEADERBOARD GRID */
+          <div id="directory" className="grid grid-cols-1 lg:grid-cols-[1fr_3.4fr_1fr] gap-6 items-start mb-20">
 
-            {/* Scannable Metric Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[640px]">
-                <thead>
-                  <tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/30">
-                    <th className="py-3 px-4 w-12 text-center">#</th>
-                    <th className="py-3 px-4">Startup / Product</th>
-                    <th className="py-3 px-4">Verified Founder</th>
-                    <th className="py-3 px-4 text-right">Verified MRR</th>
-                    <th className="py-3 px-4 text-center w-28">MoM Growth</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredTools.length > 0 ? (
-                    filteredTools.map((tool, index) => (
-                      <tr key={tool.name} className="hover:bg-slate-50/60 transition-colors group">
-                        <td className="py-4 px-4 text-xs font-bold text-slate-400 text-center">
-                          {tool.rank}
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={`https://logo.clearbit.com/${tool.domain}`}
-                              alt={tool.name}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=40&h=40&fit=crop`;
-                              }}
-                              className="h-9 w-9 rounded-lg object-contain bg-slate-50 border border-slate-100 p-1.5"
-                            />
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                                  {tool.name}
+            {/* Left Sponsored Slot Grid */}
+            <aside className="space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Featured Slots</span>
+                <span className="flex h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+              </div>
+
+              {SPONSORS_LEFT.map((sponsor) => (
+                <Card key={sponsor.name} className="p-4 bg-white border-slate-200 hover:border-indigo-500/40 transition-all shadow-sm group flex flex-col justify-between min-h-[140px]">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold tracking-wider text-indigo-600 uppercase bg-indigo-50 px-1.5 py-0.5 rounded">
+                        {sponsor.tag}
+                      </span>
+                      {/* Tokenless instant clearbit CDN */}
+                      <img
+                        src={`https://logo.clearbit.com/${sponsor.domain}`}
+                        alt={sponsor.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=40&h=40&fit=crop`;
+                        }}
+                        className="h-5 w-5 rounded-md object-contain border border-slate-100"
+                      />
+                    </div>
+                    <h3 className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      {sponsor.name}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-normal line-clamp-2">
+                      {sponsor.description}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100/60 mt-2 flex justify-end">
+                    <a
+                      href={sponsor.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-bold text-slate-600 flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                    >
+                      <span>Visit site</span>
+                      <ArrowUpRight className="h-3 w-3" />
+                    </a>
+                  </div>
+                </Card>
+              ))}
+
+              <Button
+                onClick={() => setIsSubmitModalOpen(true)}
+                variant="outline"
+                className="w-full text-xs font-bold text-slate-500 border-dashed border-slate-300 py-6 hover:bg-slate-50 hover:text-indigo-600"
+              >
+                + Place Sponsored Ad
+              </Button>
+            </aside>
+
+            {/* Center Main Metric Leaderboard */}
+            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-indigo-600" />
+                    <span>AI & Software Metrics Board</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Showing verified ARR and scaling multipliers.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-medium">Auto-updated hourly</span>
+                </div>
+              </div>
+
+              {/* Scannable Metric Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[640px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/30">
+                      <th className="py-3 px-4 w-12 text-center">#</th>
+                      <th className="py-3 px-4">Startup / Product</th>
+                      <th className="py-3 px-4">Verified Founder</th>
+                      <th className="py-3 px-4 text-right">Verified MRR</th>
+                      <th className="py-3 px-4 text-center w-28">MoM Growth</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredTools.length > 0 ? (
+                      filteredTools.map((tool) => (
+                        <tr key={tool.name} className="hover:bg-slate-50/60 transition-colors group">
+                          <td className="py-4 px-4 text-xs font-bold text-slate-400 text-center">
+                            {tool.rank}
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={`https://logo.clearbit.com/${tool.domain}`}
+                                alt={tool.name}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=40&h=40&fit=crop`;
+                                }}
+                                className="h-9 w-9 rounded-lg object-contain bg-slate-50 border border-slate-100 p-1.5"
+                              />
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                    {tool.name}
+                                  </span>
+                                  {tool.verified && (
+                                    <CheckCircle2 className="text-indigo-600 h-3.5 w-3.5 fill-white" />
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-slate-500 block leading-none mt-0.5 whitespace-nowrap">
+                                  {tool.domain} • {tool.category}
                                 </span>
-                                {tool.verified && (
-                                  <CheckCircle2 className="text-indigo-600 h-3.5 w-3.5 fill-white" />
-                                )}
                               </div>
-                              <span className="text-[10px] text-slate-500 block leading-none mt-0.5 whitespace-nowrap">
-                                {tool.domain} • {tool.category}
-                              </span>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-2">
-                            <img
-                              src={tool.founderAvatar}
-                              alt={tool.founder}
-                              className="h-6 w-6 rounded-full object-cover border border-slate-200"
-                            />
-                            <div>
-                              <span className="text-xs font-semibold text-slate-700 block leading-none">
-                                {tool.founder}
-                              </span>
-                              <span className="text-[10px] text-slate-400 leading-none block mt-0.5">
-                                {tool.founderTitle}
-                              </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={tool.founderAvatar}
+                                alt={tool.founder}
+                                className="h-6 w-6 rounded-full object-cover border border-slate-200"
+                              />
+                              <div>
+                                <span className="text-xs font-semibold text-slate-700 block leading-none">
+                                  {tool.founder}
+                                </span>
+                                <span className="text-[10px] text-slate-400 leading-none block mt-0.5">
+                                  {tool.founderTitle}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4 text-right text-xs font-bold text-slate-900">
-                          {formatRevenue(tool.mrr)}
-                        </td>
-                        <td className="py-4 px-4 text-center">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 whitespace-nowrap">
-                            <TrendingUp className="h-3 w-3" />
-                            <span>+{tool.growth}%</span>
-                          </span>
+                          </td>
+                          <td className="py-4 px-4 text-right text-xs font-bold text-slate-900">
+                            {formatRevenue(tool.mrr)}
+                          </td>
+                          <td className="py-4 px-4 text-center">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 whitespace-nowrap">
+                              <TrendingUp className="h-3 w-3" />
+                              <span>+{tool.growth}%</span>
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center text-xs text-slate-400 font-medium">
+                          No projects matched your criteria. Try adjusting your search query.
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="py-12 text-center text-xs text-slate-400 font-medium">
-                        No projects matched your criteria. Try adjusting your search query.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
-          {/* Right Sponsored Slot Grid */}
-          <aside className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Placements</span>
-              <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                <span>Active</span>
-              </span>
-            </div>
+            {/* Right Sponsored Slot Grid */}
+            <aside className="space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Placements</span>
+                <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                  <span>Active</span>
+                </span>
+              </div>
 
-            {SPONSORS_RIGHT.map((sponsor) => (
-              <Card key={sponsor.name} className="p-4 bg-white border-slate-200 hover:border-indigo-500/40 transition-all shadow-sm group flex flex-col justify-between min-h-[140px]">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold tracking-wider text-emerald-600 uppercase bg-emerald-50 px-1.5 py-0.5 rounded">
-                      {sponsor.tag}
-                    </span>
-                    <img
-                      src={`https://logo.clearbit.com/${sponsor.domain}`}
-                      alt={sponsor.name}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=40&h=40&fit=crop`;
-                      }}
-                      className="h-5 w-5 rounded-md object-contain border border-slate-100"
-                    />
+              {SPONSORS_RIGHT.map((sponsor) => (
+                <Card key={sponsor.name} className="p-4 bg-white border-slate-200 hover:border-indigo-500/40 transition-all shadow-sm group flex flex-col justify-between min-h-[140px]">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold tracking-wider text-emerald-600 uppercase bg-emerald-50 px-1.5 py-0.5 rounded">
+                        {sponsor.tag}
+                      </span>
+                      <img
+                        src={`https://logo.clearbit.com/${sponsor.domain}`}
+                        alt={sponsor.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=40&h=40&fit=crop`;
+                        }}
+                        className="h-5 w-5 rounded-md object-contain border border-slate-100"
+                      />
+                    </div>
+                    <h3 className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      {sponsor.name}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-normal line-clamp-2">
+                      {sponsor.description}
+                    </p>
                   </div>
-                  <h3 className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                    {sponsor.name}
-                  </h3>
-                  <p className="text-[11px] text-slate-500 mt-1 leading-normal line-clamp-2">
-                    {sponsor.description}
-                  </p>
-                </div>
-                <div className="pt-2 border-t border-slate-100/60 mt-2 flex justify-end">
-                  <a
-                    href={sponsor.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] font-bold text-slate-600 flex items-center gap-1 hover:text-indigo-600 transition-colors"
-                  >
-                    <span>Visit site</span>
-                    <ArrowUpRight className="h-3 w-3" />
-                  </a>
-                </div>
-              </Card>
-            ))}
+                  <div className="pt-2 border-t border-slate-100/60 mt-2 flex justify-end">
+                    <a
+                      href={sponsor.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] font-bold text-slate-600 flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                    >
+                      <span>Visit site</span>
+                      <ArrowUpRight className="h-3 w-3" />
+                    </a>
+                  </div>
+                </Card>
+              ))}
 
-            <Button
-              onClick={() => setIsSubmitModalOpen(true)}
-              variant="outline"
-              className="w-full text-xs font-bold text-slate-500 border-dashed border-slate-300 py-6 hover:bg-slate-50 hover:text-indigo-600"
-            >
-              + Partner Integration
-            </Button>
-          </aside>
+              <Button
+                onClick={() => setIsSubmitModalOpen(true)}
+                variant="outline"
+                className="w-full text-xs font-bold text-slate-500 border-dashed border-slate-300 py-6 hover:bg-slate-50 hover:text-indigo-600"
+              >
+                + Partner Integration
+              </Button>
+            </aside>
 
-        </div>
+          </div>
+        )}
 
-        {/* Live Active Founder Discussion Feed Section */}
-        <section id="updates" className="mb-20">
-          <div className="flex items-center gap-2 mb-6 px-1">
-            <MessageSquare className="h-5 w-5 text-indigo-600" />
-            <h2 className="font-display text-xl font-bold text-slate-900">Founder Milestones & Feed</h2>
-            <span className="ml-2 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-500">Live Updates</span>
+        {/* DISTRIBUTION MASTERPIECE: PREMIUM MARKETING VALUE PROPOSITIONS */}
+        <section id="distribution" className="mb-20">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200/50 py-1 px-3 text-xs font-semibold mb-3">
+              The Distribution Advantage
+            </Badge>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+              Why founders pay $149/mo to secure a category slot
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mt-2">
+              We do not just list software: we drive high-volume, highly qualified B2B customer traffic directly to your conversion funnel through systematic distribution channels.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {FEED_POSTS.map((post) => (
-              <Card key={post.id} className="p-5 bg-white border-slate-200 hover:shadow-sm transition-shadow flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <img src={post.avatar} alt={post.author} className="h-8 w-8 rounded-full object-cover border border-slate-200" />
-                      <div>
-                        <span className="text-xs font-bold text-slate-900 block leading-none">{post.author}</span>
-                        <span className="text-[10px] text-slate-400 block leading-none mt-0.5">@{post.handle}</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-semibold">{post.time}</span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                    {post.content}
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="p-6 bg-white border-slate-200 hover:shadow-sm transition-shadow flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+                  <Zap className="h-5 w-5" />
                 </div>
-                <div className="flex items-center gap-4 pt-3 border-t border-slate-100 text-[11px] font-bold text-slate-400">
-                  <span className="hover:text-slate-600 cursor-pointer flex items-center gap-1">
-                    <span>❤️ {post.metrics.likes}</span>
-                  </span>
-                  <span className="hover:text-slate-600 cursor-pointer flex items-center gap-1">
-                    <span>💬 {post.metrics.replies}</span>
-                  </span>
+                <h3 className="text-sm font-bold text-slate-900 mb-2">10K+ Lead Generation Syndication</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Your software is automatically cross-promoted and recommended inside BarakahSoft's active outbound lead-capture campaigns, reaching thousands of business decision-makers.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-slate-100 mt-4">
+                <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Active Channel Syndication</span>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-white border-slate-200 hover:shadow-sm transition-shadow flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+                  <Layers className="h-5 w-5" />
                 </div>
-              </Card>
-            ))}
+                <h3 className="text-sm font-bold text-slate-900 mb-2">Capped Category Scarcity (Max 3)</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  We limit each software category to exactly three sponsored slots. This completely eliminates ad congestion, drastically lowers buyer churn, and guarantees extreme click-through density.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-slate-100 mt-4">
+                <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Zero Placement Dilution</span>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-white border-slate-200 hover:shadow-sm transition-shadow flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+                  <Briefcase className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 mb-2">High-Authority Link Equity</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Get high-authority, permanent backlink profiles from a trusted Wyoming-registered B2B domain, directly boosting your product's domain authority and search visibility.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-slate-100 mt-4">
+                <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">High Trust Backlinking</span>
+              </div>
+            </Card>
           </div>
         </section>
 
@@ -748,9 +902,9 @@ export default function AiToolsDirectory() {
               <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center mb-4 text-indigo-600">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">Application Submitted</h3>
+              <h3 className="text-sm font-bold text-slate-900">Application Verified</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
-                Verification process initiated. Shakil will manually review your product metrics and reach out directly with Stripe checkout details in under 12 hours.
+                Redirecting to Stripe checkout to secure your active monthly placement slot...
               </p>
             </div>
           ) : (
@@ -822,21 +976,24 @@ export default function AiToolsDirectory() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsSubmitModalOpen(false)}
-                  className="rounded-xl text-xs font-semibold border-slate-200 hover:bg-slate-50 h-10 px-4"
-                >
-                  Cancel
-                </Button>
+              <div className="flex flex-col gap-2 pt-2">
                 <Button
                   type="submit"
-                  className="rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white h-10 px-5"
+                  className="w-full rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white h-11"
                 >
-                  Confirm Slot Request
+                  Pay $149/mo & Secure Active Spot
                 </Button>
+                <div className="text-center">
+                  <span className="text-[10px] text-slate-400">or</span>
+                </div>
+                <a
+                  href={STRIPE_DEPOSIT_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center justify-center h-11 transition-colors"
+                >
+                  Pay $199 Waitlist Deposit to Hold Spot
+                </a>
               </div>
             </form>
           )}
